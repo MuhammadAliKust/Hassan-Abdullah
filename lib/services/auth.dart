@@ -6,7 +6,7 @@ import 'package:hassan_abdullah_apis/models/user.dart';
 import 'package:http/http.dart' as http;
 
 class AuthServices {
-  String todoURL = "";
+  String todoURL = "https://todo-nu-plum-19.vercel.app";
 
   ///Register
   Future<RegisterModel> registerUser({
