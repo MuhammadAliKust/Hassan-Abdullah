@@ -6,42 +6,43 @@ import 'package:hassan_abdullah_apis/views/profile.dart';
 import 'package:hassan_abdullah_apis/views/register.dart';
 import 'package:provider/provider.dart';
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+class UpdateProfileView extends StatefulWidget {
+  const UpdateProfileView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<UpdateProfileView> createState() => _UpdateProfileViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
-  TextEditingController emailController = TextEditingController();
-  TextEditingController pwdController = TextEditingController();
+class _UpdateProfileViewState extends State<UpdateProfileView> {
+  TextEditingController nameController = TextEditingController();
   bool isLoading = false;
+
+  @override
+  void initState() {
+    var userProvider = Provider.of<UserProvider>(context, listen: false);
+    nameController = TextEditingController(
+      text: userProvider.getUser().user!.name.toString(),
+    );
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     var userProvider = Provider.of<UserProvider>(context);
     var tokenProvider = Provider.of<ToeknProvider>(context);
     return Scaffold(
-      appBar: AppBar(title: Text("Login")),
+      appBar: AppBar(title: Text("Update Profile")),
       body: Column(
         children: [
-          TextField(controller: emailController),
-          TextField(controller: pwdController),
+          TextField(controller: nameController),
           SizedBox(height: 20),
           isLoading
               ? Center(child: CircularProgressIndicator())
               : ElevatedButton(
                   onPressed: () async {
-                    if (emailController.text.isEmpty) {
+                    if (nameController.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Email cannot be empty.")),
-                      );
-                      return;
-                    }
-                    if (pwdController.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Password cannot be empty.")),
+                        SnackBar(content: Text("Name cannot be empty.")),
                       );
                       return;
                     }
@@ -49,14 +50,13 @@ class _LoginViewState extends State<LoginView> {
                       isLoading = true;
                       setState(() {});
                       await AuthServices()
-                          .loginUser(
-                            email: emailController.text,
-                            pwd: pwdController.text,
+                          .updateProfile(
+                            name: nameController.text,
+                            token: tokenProvider.getToken().toString(),
                           )
                           .then((val) async {
-                            tokenProvider.setToken(val.token.toString());
                             await AuthServices()
-                                .getProfile(val.token.toString())
+                                .getProfile(tokenProvider.getToken().toString())
                                 .then((userModel) {
                                   userProvider.setUser(userModel);
                                   isLoading = false;
@@ -67,18 +67,13 @@ class _LoginViewState extends State<LoginView> {
                                       return AlertDialog(
                                         title: Text("Message"),
                                         content: Text(
-                                          "User has been logged in successfully.",
+                                          "Profile has been updated successfully.",
                                         ),
                                         actions: [
                                           TextButton(
                                             onPressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      ProfileView(),
-                                                ),
-                                              );
+                                              Navigator.pop(context);
+                                              Navigator.pop(context);
                                             },
                                             child: Text("Okay"),
                                           ),
@@ -96,18 +91,8 @@ class _LoginViewState extends State<LoginView> {
                       ).showSnackBar(SnackBar(content: Text(e.toString())));
                     }
                   },
-                  child: Text("Login"),
+                  child: Text("Update Profile"),
                 ),
-          SizedBox(height: 30),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => RegisterView()),
-              );
-            },
-            child: Text("Go to Register"),
-          ),
         ],
       ),
     );
